@@ -10,9 +10,9 @@ module Searchable
     objects = DBConnection.execute(<<-SQL, *params.values)
       SELECT
         *
-      FROM 
+      FROM
         #{table_name}
-      WHERE 
+      WHERE
         #{where_line};
     SQL
 
