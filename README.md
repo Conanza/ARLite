@@ -35,7 +35,7 @@ I write a class, `SQLObject` (i.e. a Rails model), that interacts with the datab
 
 ### Phase Ia: `::table_name` and `::table_name=`
 
-Getter/setter methods for the class to figure out which table the records should be fetched from, inserted into, etc. Stores this in a class ivar.
+Helper getter/setter methods for the class to figure out which **table** the records should be fetched from, inserted into, etc. Stores this in a class ivar.
 
 Example:
 
@@ -58,10 +58,9 @@ BigDog.table_name # => "big_dogs"
 
 This is done using the `String#tableize` method that the ActiveSupport inflector library provides.
 
-### Phase Ib: Getters and Setters
+### Phase Ib: Attribute Getters and Setters
 
-When we define a model class `Cat < SQLObject`, it should automatically get setter and getter methods for each of the
-columns in its table.
+When we define a model class `Cat < SQLObject`, it should automatically get setter and getter methods for each of the columns in its table (i.e. its attributes).
 
 To accomplish this:
 `::columns` returns an array with the names of the table's columns as symbols.
@@ -77,13 +76,13 @@ cat.name = "Gizmo"
 cat.attributes #=> { name: "Gizmo" }
 ```
 
-`#attributes` instance method initializes `@attributes` to an empty hash and stores any new values added to it.
+`#attributes` initializes `@attributes` to an empty hash and stores any new values added to it.
 
+### Phase Ic: `#initialize`
 
-## Phase Id: `#initialize`
+`#initialize` method for `SQLObject` takes in a single `params` hash.
 
-Write an `#initialize` method for `SQLObject`. It should take in a
-single `params` hash. We want:
+Example:
 
 ```ruby
 cat = Cat.new(name: "Gizmo", owner_id: 123)
@@ -91,30 +90,13 @@ cat.name #=> "Gizmo"
 cat.owner_id #=> 123
 ```
 
-Your `#initialize` method should iterate through each of the `attr_name,
-value` pairs. For each `attr_name`, it should first convert the name to
-a symbol, and then check whether the `attr_name` is among the `columns`.
-If it is not, raise an error:
+It iterates through each of the `attr_name, value` pairs, and checks whether the `attr_name` is among the `columns`. If not, it raises an error.
 
-    unknown attribute '#{attr_name}'
+Uses `#send` to set the attributes by calling the respective setter method.
 
-Set the attribute by calling the setter method. Use `#send`; avoid
-using `@attributes` or `#attributes` inside `#initialize`.
+### Phase Id: `::all`, `::parse_all`
 
-**Hint**: we need to call `::columns` on a class object, not the
-instance. For example, we can call `Dog::columns` but not
-`dog.columns`.
-
-Note that `dog.class == Dog`. How can we use the `Object#class` method
-to access the `::columns` **class method** from inside the
-`#initialize` **instance method**?
-
-Run the specs, Luke!
-
-## Phase Ie: `::all`, `::parse_all`
-
-We now want to write a method `::all` that will fetch all the records
-from the database. The first thing to do is to try to generate the
+`::all` fetches all the records from the database. The first thing to do is to try to generate the
 necessary SQL query to issue. Generate SQL and print it out so you can
 view and verify it. Use the heredoc syntax to define your query.
 
@@ -130,18 +112,6 @@ Cat.all
 #   cats.*
 # FROM
 #   cats
-
-class Human < SQLObject
-  self.table_name = "humans"
-
-  finalize!
-end
-
-Human.all
-# SELECT
-#   humans.*
-# FROM
-#   humans
 ```
 
 Notice that the SQL is formulaic except for the table name, which we
