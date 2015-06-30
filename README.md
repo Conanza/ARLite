@@ -12,7 +12,9 @@ In this test-driven project, I use a little metaprogramming to build a lite vers
 * Metaprogramming
 * Macros
 
-## Phase 0: `my_attr_accessor`
+## Walkthrough
+
+### Phase 0: `my_attr_accessor`
 
 What happens if Ruby didn't provide the convenient `attr_accessor` for us?
 
@@ -21,7 +23,7 @@ described [here][ivar-get].
 
 [ivar-get]: http://ruby-doc.org/core-2.0.0/Object.html#method-i-instance_variable_get
 
-## Phase I: `SQLObject`: Overview
+### Phase I: `SQLObject`: Overview
 
 I write a class, `SQLObject` (i.e. a Rails model), that interacts with the database using raw SQL. Just like the real `ActiveRecord::Base`, it has the following methods:
 
@@ -96,85 +98,26 @@ Uses `#send` to set the attributes by calling the respective setter method.
 
 #### Phase Id: `::all`, `::parse_all`
 
-`::all` fetches all the records from the database.
-
-Example:
-
-```ruby
-class Cat < SQLObject
-  finalize!
-end
-
-Cat.all
-# SELECT
-#   cats.*
-# FROM
-#   cats
-```
+`::all` fetches all the records from the database. Breaking it down:
 
 The SQL is formulaic except for the table name, so I just interpolate the value from `::table_name` (SQL only lets us use `?` to interpolate **values**, not
 table or column names).
 
+I've been using the `DBConnection` class and `DBConnection.execute(<<-SQL, arg1, arg2, ...)` to execute SQL queries. This returns an array of raw `Hash` objects where the keys are column names and the values are column values.
 
-Once we've got our query looking good, it's time to execute it. Use
-the provided `DBConnection` class. You can use
-`DBConnection.execute(<<-SQL, arg1, arg2, ...)` in the usual manner.
+So I write a `SQLObject::parse_all` method that iterates through these results, using `self.new` (self is the class inside a class method) to instantiate a new Ruby object for each result.
 
-Calling `DBConnection` will return an array of raw `Hash` objects
-where the keys are column names and the values are column values. We
-want to turn these into Ruby objects:
-
-```ruby
-class Human < SQLObject
-  self.table_name = "humans"
-
-  finalize!
-end
-
-Human.all
-=> [#<Human:0x007fa409ceee38
-  @attributes={:id=>1, :fname=>"Devon", :lname=>"Watts", :house_id=>1}>,
- #<Human:0x007fa409cee988
-  @attributes={:id=>2, :fname=>"Matt", :lname=>"Rubens", :house_id=>1}>,
- #<Human:0x007fa409cee528
-  @attributes={:id=>3, :fname=>"Ned", :lname=>"Ruggeri", :house_id=>2}>]
-```
-
-To turn each of the `Hash`es into `Human`s, write a
-`SQLObject::parse_all` method. Iterate through the results, using
-`new` to create a new instance for each.
-
-`new` what? `SQLObject.new`? That's not right, we want `Human.all` to
-return `Human` objects, and `Cat.all` to return `Cat`
-objects. **Hint**: inside the `::parse_all` class method, what is
-`self`?
-
-Run the `::parse_all` and `::all` specs! Then carry on!
+I call `::parse_all` at the end of `::all`.
 
 #### Phase Ie: `::find`
 
-Write a `SQLObject::find(id)` method to return a single object with
-the given id. You could write `::find` using `::all` and `Array#find`
-like so:
+Given an id, `SQLObject::find(id)` returns a single object.
 
-```ruby
-class SQLObject
-  def self.find(id)
-    self.all.find { |obj| obj.id == id }
-  end
-end
-```
-
-That would be inefficient: we'd fetch all the records from the DB.
-Instead, write a new SQL query that will fetch at most one record.
-
-Yo dawg, I heard you like specs, so I spent a lot of time writing
-them. Please run them again. :-)
+Again, I use `::parse_all` at the end to get the Ruby object.
 
 #### Phase If: `#insert`
 
-Write a `SQLObject#insert` instance method. It should build and
-execute a SQL query like this:
+`SQLObject#insert` builds and executes a SQL query while taking care to leave out the `id` column. It needs to look like this:
 
 ```sql
 INSERT INTO
@@ -183,29 +126,17 @@ VALUES
   (?, ?, ?)
 ```
 
-To simplify building this query, I made two local variables:
+So to build this query there's a few extra steps:
 
-* `col_names`: I took the array of `::columns` of the class and
-  joined it with commas.
-* `question_marks`: I built an array of question marks (`["?"] * n`)
-  and joined it with commas. What determines the number of question marks?
+* `col_names`: Joined the array of `::columns` (leaving out `id`) with commas.
+* `question_marks`: Joined an array of question marks (`["?"] * n`), where `n` is the number of columns, with commas.
 
-Lastly, when you call `DBConnection.execute`, you'll need to pass in
-the values of the columns. Two hints:
+I need to pass in values for the columns when calling `DBConnection.execute`:
 
-* I wrote a `SQLObject#attribute_values` method that returns an array
-  of the values for each attribute. I did this by calling `Array#map`
-  on `SQLObject::columns`, calling `send` on the instance to get
-  the value.
-* Once you have the `#attribute_values` method working, I passed this
-  into `DBConnection.execute` using the splat operator.
+* `SQLObject#attribute_values_without_id` returns an array of the values for each attribute, excluding `id`.
+* Pass this into `DBConnection.execute` using the splat operator.
 
-When the DB inserts the record, it will assign the record an ID.
-After the `INSERT` query is run, we want to update our `SQLObject`
-instance with the assigned ID. Check out the `DBConnection` file for a
-helpful method.
-
-Again with the specs please.
+Lastly, I update the `SQLObject` instance with the assigned ID using `DBConnection#last_insert_row_id`.
 
 #### Phase Ig: `#update`
 
@@ -240,7 +171,7 @@ them public so the specs can call them :-)).
 
 You did it! Good work!
 
-## Phase II: `Searchable`
+### Phase II: `Searchable`
 
 Let's write a module named `Searchable` which will add the ability to
 search using `::where`. By using `extend`, we can mix in `Searchable`
@@ -265,7 +196,7 @@ I used a local variable `where_line` where I mapped the `keys` of the
 To fill in the question marks, I used the `values` of the `params`
 object.
 
-## Phase III+: Associations
+### Phase III+: Associations
 
 [Page on over to the association phases!][ar-part-two]
 

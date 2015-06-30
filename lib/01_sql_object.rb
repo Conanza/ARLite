@@ -6,9 +6,9 @@ class SQLObject
     return @columns if @columns
 
     objects = DBConnection.execute2(<<-SQL)
-      SELECT 
+      SELECT
         *
-      FROM 
+      FROM
         #{table_name};
     SQL
 
@@ -35,7 +35,7 @@ class SQLObject
     objects = DBConnection.execute(<<-SQL)
       SELECT
         *
-      FROM 
+      FROM
         #{table_name};
     SQL
 
@@ -50,9 +50,9 @@ class SQLObject
     object = DBConnection.execute(<<-SQL, id)
       SELECT
         *
-      FROM 
+      FROM
         #{table_name}
-      WHERE 
+      WHERE
         #{table_name}.id = ?;
     SQL
 
@@ -76,12 +76,12 @@ class SQLObject
     self.class.columns.map { |attr| self.send(attr) }
   end
 
-  def columns_without_id 
-    self.class.columns.reject { |attr| attr == :id }
-  end
-
   def attribute_values_without_id
     attributes.values_at(*columns_without_id)
+  end
+
+  def columns_without_id
+    self.class.columns.reject { |attr| attr == :id }
   end
 
   def insert
@@ -90,7 +90,7 @@ class SQLObject
     question_marks = (["?"] * count).join(", ")
 
     DBConnection.execute(<<-SQL, *attribute_values_without_id)
-      INSERT INTO 
+      INSERT INTO
         #{self.class.table_name} (#{column_names})
       VALUES
         (#{question_marks});
@@ -105,11 +105,11 @@ class SQLObject
       .join(", ")
 
     DBConnection.execute(<<-SQL, *attribute_values_without_id, attributes[:id])
-      UPDATE 
+      UPDATE
         #{self.class.table_name}
-      SET 
+      SET
         #{set_line}
-      WHERE 
+      WHERE
         #{self.class.table_name}.id = ?;
     SQL
   end
