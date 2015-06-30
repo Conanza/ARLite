@@ -1,14 +1,14 @@
-# ActiveRecordLite
+# ARLite
 
 ## Description
 
-In this test-driven project, I use a little metaprogramming to build a lite version of ActiveRecord to understand how it actually works, how it gets translated into SQL.
+In this test-driven project, I use a little metaprogramming to build a lite version of Active Record to understand how it actually works, how it gets translated into SQL.
 
 ## Topics
 
 * Ruby
 * SQL
-* ActiveRecord
+* Active Record
 * Metaprogramming
 * Macros
 
@@ -16,7 +16,7 @@ In this test-driven project, I use a little metaprogramming to build a lite vers
 
 ### TL;DR
 
-In `activerecordlite.rb`, you can find a class `SQLObject` (i.e. a Rails model) that features some of the methods from the real `ActiveRecord::Base`.
+In `arlite.rb`, you can find a class `SQLObject` (i.e. a Rails model) that features some of the methods from the real `ActiveRecord::Base`.
 
 In `searchable.rb`, I write a module that adds the ability to search using `::where`.
 
