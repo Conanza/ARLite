@@ -155,12 +155,7 @@ I pass in the attribute values and the `id` of the object to update.
 
 #### Phase Ih: `#save`
 
-Finally, write an instance method `SQLObject#save`. This should call
-`#insert` or `#update` depending on whether `id.nil?`. It is not
-intended that the user call `#insert` or `#update` directly (leave
-them public so the specs can call them :-)).
-
-You did it! Good work!
+Now that I have `#insert` and `#update`, `SQLObject#save` calls one or the other depending if `id.nil?`. 
 
 ### Phase II: `Searchable`
 
