@@ -33,7 +33,7 @@ I write a class, `SQLObject` (i.e. a Rails model), that interacts with the datab
 * `#save`: convenience method that either calls `insert`/`update`
   depending on whether or not the `SQLObject` already exists in the table.
 
-### Phase Ia: `::table_name` and `::table_name=`
+#### Phase Ia: `::table_name` and `::table_name=`
 
 Helper getter/setter methods for the class to figure out which **table** the records should be fetched from, inserted into, etc. Stores this in a class ivar.
 
@@ -58,7 +58,7 @@ BigDog.table_name # => "big_dogs"
 
 This is done using the `String#tableize` method that the ActiveSupport inflector library provides.
 
-### Phase Ib: Attribute Getters and Setters
+#### Phase Ib: Attribute Getters and Setters
 
 When we define a model class `Cat < SQLObject`, it should automatically get setter and getter methods for each of the columns in its table (i.e. its attributes).
 
@@ -78,7 +78,7 @@ cat.attributes #=> { name: "Gizmo" }
 
 `#attributes` initializes `@attributes` to an empty hash and stores any new values added to it.
 
-### Phase Ic: `#initialize`
+#### Phase Ic: `#initialize`
 
 `#initialize` method for `SQLObject` takes in a single `params` hash.
 
@@ -94,11 +94,9 @@ It iterates through each of the `attr_name, value` pairs, and checks whether the
 
 Uses `#send` to set the attributes by calling the respective setter method.
 
-### Phase Id: `::all`, `::parse_all`
+#### Phase Id: `::all`, `::parse_all`
 
-`::all` fetches all the records from the database. The first thing to do is to try to generate the
-necessary SQL query to issue. Generate SQL and print it out so you can
-view and verify it. Use the heredoc syntax to define your query.
+`::all` fetches all the records from the database.
 
 Example:
 
@@ -114,10 +112,9 @@ Cat.all
 #   cats
 ```
 
-Notice that the SQL is formulaic except for the table name, which we
-need to insert. Use ordinary Ruby string interpolation (`#{whatevs}`) for
-this; SQL will only let you use `?` to interpolate **values**, not
-table or column names.
+The SQL is formulaic except for the table name, so I just interpolate the value from `::table_name` (SQL only lets us use `?` to interpolate **values**, not
+table or column names).
+
 
 Once we've got our query looking good, it's time to execute it. Use
 the provided `DBConnection` class. You can use
@@ -154,7 +151,7 @@ objects. **Hint**: inside the `::parse_all` class method, what is
 
 Run the `::parse_all` and `::all` specs! Then carry on!
 
-## Phase If: `::find`
+#### Phase Ie: `::find`
 
 Write a `SQLObject::find(id)` method to return a single object with
 the given id. You could write `::find` using `::all` and `Array#find`
@@ -174,7 +171,7 @@ Instead, write a new SQL query that will fetch at most one record.
 Yo dawg, I heard you like specs, so I spent a lot of time writing
 them. Please run them again. :-)
 
-## Phase Ih: `#insert`
+#### Phase If: `#insert`
 
 Write a `SQLObject#insert` instance method. It should build and
 execute a SQL query like this:
@@ -210,7 +207,7 @@ helpful method.
 
 Again with the specs please.
 
-## Phase Ii: `#update`
+#### Phase Ig: `#update`
 
 Next we'll write a `SQLObject#update` method to update a record's
 attributes. Here's a reminder of what the resulting SQL should look
@@ -234,7 +231,7 @@ the `id` of the object (for the last `?` in the `WHERE` clause).
 
 Every day I'm testing.
 
-## Phase Ij: `#save`
+#### Phase Ih: `#save`
 
 Finally, write an instance method `SQLObject#save`. This should call
 `#insert` or `#update` depending on whether `id.nil?`. It is not
