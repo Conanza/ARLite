@@ -1,4 +1,4 @@
-require 'activerecordlite'
+require 'arlite'
 require 'securerandom'
 
 describe SQLObject do

@@ -7,6 +7,17 @@ class SQLObject
   extend Associatable
   extend Searchable
 
+  def self.all
+    objects = DBConnection.execute(<<-SQL)
+      SELECT
+        *
+      FROM
+        #{table_name};
+    SQL
+
+    parse_all(objects)
+  end
+
   def self.columns
     return @columns if @columns
 
@@ -28,29 +39,6 @@ class SQLObject
     end
   end
 
-  def self.table_name=(table_name)
-    @table_name = table_name
-  end
-
-  def self.table_name
-    @table_name ||= self.name.tableize
-  end
-
-  def self.all
-    objects = DBConnection.execute(<<-SQL)
-      SELECT
-        *
-      FROM
-        #{table_name};
-    SQL
-
-    parse_all(objects)
-  end
-
-  def self.parse_all(results)
-    results.each_with_object([]) { |attrs, objects| objects << self.new(attrs) }
-  end
-
   def self.find(id)
     object = DBConnection.execute(<<-SQL, id)
       SELECT
@@ -62,6 +50,18 @@ class SQLObject
     SQL
 
     parse_all(object).first
+  end
+
+  def self.parse_all(results)
+    results.each_with_object([]) { |attrs, objects| objects << self.new(attrs) }
+  end
+
+  def self.table_name=(table_name)
+    @table_name = table_name
+  end
+
+  def self.table_name
+    @table_name ||= self.name.tableize
   end
 
   def initialize(params = {})
