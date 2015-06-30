@@ -14,6 +14,14 @@ In this test-driven project, I use a little metaprogramming to build a lite vers
 
 ## Walkthrough
 
+### TL;DR
+
+In `activerecordlite.rb`, you can find a class `SQLObject` (i.e. a Rails model) that features some of the methods from the real `ActiveRecord::Base`.
+
+In `searchable.rb`, I write a module that adds the ability to search using `::where`.
+
+In `associatable.rb`, I write a module that defines `belongs_to`, `has_many`, `has_one_through` and `has_many_through` associations.
+
 ### Phase 0: `my_attr_accessor`
 
 What happens if Ruby didn't provide the convenient `attr_accessor` for us?
