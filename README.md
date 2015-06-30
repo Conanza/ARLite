@@ -205,24 +205,9 @@ options.table_name # => "humans"
 
 #### Phase IIIb: `belongs_to`, `has_many`
 
-Begin writing a `belongs_to` method for `Associatable`. This method
-should take in the association name and an options hash. It should
-build a `BelongsToOptions` object; save this in a local variable named
-`options`.
+In an `Associatable` module, `belongs_to` and `has_many` methods take in the association name and an options hash. It builds a `BelongsToOptions` or `HasManyOptions` object respectively.
 
-Within `belongs_to`, call `define_method` to create a new method to
-access the association. Within this method:
-
-* Use `send` to get the value of the foreign key.
-* Use `model_class` to get the target model class.
-* Use `where` to select those models where the `primary_key` column is
-  equal to the foreign key value.
-* Call first (since there should be only one such item).
-
-Throughout this method definition, use the `options` object so that
-defaults are used appropriately.
-
-Do likewise for `has_many`.
+Within the methods, a method is created to access the association. Using the `options` object, I find the target model class with `model_class`, and I use `Searchable::where` to find the model(s) where the `primary_key` column is equal to the foreign key value
 
 ## Phase IV: `has_one_through`
 
@@ -362,14 +347,3 @@ The solution to this problem is to move the fetching of the options
 classes. That means that at the time `#house` is called,
 `has_one_through` will be able to constantize `"Human"` and `"House"`
 successfully.
-
-## Extension Ideas
-
-0. Write `where` so that it is lazy and stackable. Implement a
-  `Relation` class.
-0. Write an `includes` method that does pre-fetching.
-0. `has_many :through`
-    * This should handle both `belongs_to => has_many` and `has_many
-      => belongs_to`.
-0. Validation methods/validator classes
-0. `joins`

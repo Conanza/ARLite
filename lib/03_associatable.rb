@@ -27,7 +27,7 @@ class BelongsToOptions < AssocOptions
       primary_key: :id
     }.merge(options)
 
-    @foreign_key, @class_name, @primary_key = 
+    @foreign_key, @class_name, @primary_key =
       defaults.values_at(:foreign_key, :class_name, :primary_key)
   end
 end
@@ -40,16 +40,20 @@ class HasManyOptions < AssocOptions
       primary_key: :id
     }.merge(options)
 
-    @foreign_key, @class_name, @primary_key = 
+    @foreign_key, @class_name, @primary_key =
       defaults.values_at(:foreign_key, :class_name, :primary_key)
   end
 end
 
 module Associatable
+  def assoc_options
+    @assoc_options ||= {}
+  end
+  
   def belongs_to(name, options = {})
     assoc_options[name] = BelongsToOptions.new(name, options)
 
-    define_method(name.to_sym) do 
+    define_method(name.to_sym) do
       object = self.class.assoc_options[name]
         .model_class
         .where(id: self.send(self.class.assoc_options[name].foreign_key))
@@ -61,13 +65,9 @@ module Associatable
   def has_many(name, options = {})
     opts = HasManyOptions.new(name, self.name, options)
 
-    define_method(name.to_sym) do 
+    define_method(name.to_sym) do
       opts.model_class.where(opts.foreign_key => self.send(opts.primary_key))
     end
-  end
-
-  def assoc_options
-    @assoc_options ||= {}
   end
 end
 
