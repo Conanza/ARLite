@@ -140,9 +140,7 @@ Lastly, I update the `SQLObject` instance with the assigned ID using `DBConnecti
 
 #### Phase Ig: `#update`
 
-Next we'll write a `SQLObject#update` method to update a record's
-attributes. Here's a reminder of what the resulting SQL should look
-like:
+`SQLObject#update` updates a record's attributes. Like insert, I build and produce a query that looks like this:
 
 ```sql
 UPDATE
@@ -150,17 +148,10 @@ UPDATE
 SET
   col1 = ?, col2 = ?, col3 = ?
 WHERE
-  id = ?
+  table_name.id = ?
 ```
 
-This is very similar to the `#insert` method. To produce the
-"SET line", I mapped `::columns` to `#{attr_name} = ?` and joined with
-commas.
-
-I again used the `#attribute_values` trick. I additionally passed in
-the `id` of the object (for the last `?` in the `WHERE` clause).
-
-Every day I'm testing.
+I pass in the attribute values and the `id` of the object to update.
 
 #### Phase Ih: `#save`
 
